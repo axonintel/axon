@@ -3,6 +3,7 @@ import json
 import logging
 import warnings
 import time
+import datetime
 from os import path
 
 timestamp = int(time.time())
@@ -11,8 +12,12 @@ timestamp = int(time.time())
 def on_message(wsapp, message):
     try:
         msg = json.loads(message)
-        ts = msg['timestamp']
-        print(msg) if is_new_message(ts) else print("Older forecast: ", msg)
+        assert valid_axon_forecast(msg)
+
+        if is_new_message(msg['timestamp']):
+            print("TODO with a NEW notification came in: ", msg)
+        else:
+            print("TODO with an OLD notification after a websocket initial connect/re-connect", msg)
     except Exception as e:
         print("Caught exception when converting message into json\n" + str(e))
 
@@ -45,6 +50,22 @@ def is_new_message(ts):
     else:
         return False
 
+def valid_axon_forecast(msg):
+    """
+    Validates that the message follows axon's standards and has the information needed for decision making
+    :param msg: json notification received by axon
+    :return: True for valid and False for not valid or incomplete
+    """
+    ts = msg['timestamp']
+    if ts:
+        forecasts = json.loads(msg['forecast'])
+        assert datetime.datetime.utcfromtimestamp(ts).replace(hour=0,minute=0,second=0) \
+               == datetime.datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+        assert forecasts[0]['candle'] == datetime.datetime.utcnow().strftime("%Y-%m-%d 00:00Z")
+        assert forecasts[1]['candle'] == (datetime.datetime.utcnow() + datetime.timedelta(days=1)).strftime("%Y-%m-%d 00:00Z")
+        return True
+    else:
+        return False
 
 if __name__ == "__main__":
     main()
