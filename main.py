@@ -21,7 +21,9 @@ def main():
     BASE_DIR = path.dirname(path.dirname(path.abspath(__file__)))  # (str): absolute path to project root
 
     uri = "wss://api.axonintellex.com"
-    wsapp = websocket.WebSocketApp(uri, on_message=on_message)
+    trial_key = "n1MLgSRxLP86iHUUjAFEv6PDC9NCWoVP5DBTAcN6"
+    header = {"x-api-key":trial_key}
+    wsapp = websocket.WebSocketApp(uri, on_message=on_message, header=header)
     wsapp.run_forever(ping_interval=60)
 
 
