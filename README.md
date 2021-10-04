@@ -1,28 +1,39 @@
 # Axon Websocket Client / Trader
+##### Provided under MIT License by Axon Intellex.
 
-## Introduction
-Axon is an artificially intelligent agent that trades bitcoin. This API is aimed to connect to Axon's websocket and allow for instantanous trading decisions. 
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Axon is trained using reinforcement learning and gathers tons of features from the market to estimate the favorable action to take in the following two days. Since its decisions are based on daily candles, the most important decision is taken when a daily candle closes and a new daily candle opens. At that point, Axon runs an analysis that estimates what its next course of action is for the freshly created daily candle. All timing is assumed to be in UTC.
+## Benefits
+- A simple to use python wrapper for automatic trading based on Axon's websocket.
+- Allows daily trades to happen on coinbase pro by leveraging coinbasepro-python.
+- Enhance your trading decisions by leveraging Axon's reinforcement learning gathered from tons of features from the market.
 
-Axon may take 3 decisions:
-1- Long: Taking a long position or buying with an anticipation of a minimum_roi
-2- Short: Taking a short position or shorting with an anticipation of a minimum_roi
-3- STFO: Staying the Fuck out or not trading due to either a sideway movement or high volatility and randomness in the market.
+## Under Development
+- Integration to coinbasepro-python **Looking for assistance**
+- real-time order book
 
-While the newly created daily candle's decision is less likely to change, the conclusion of the day that follows fluctuates more often and is very much driven by how the current daily candle shall close.
+## Background
+- Axon is an artificially intelligent agent that trades bitcoin for now. This module aims to connect to Axon's websocket and allow for instantanous AI-based trading decisions. 
+- Axon's decisions are based on daily candles, the most important decision is taken when a daily candle closes and a new daily candle opens. 
+- Axon runs an analysis, (_which may take up to 5 mins_), that estimates what the next course of action is for the freshly created daily candle. 
+- All timing is assumed to be in UTC. **important**
 
-Axon's websocket API updates the client every 30 minutes about its daily trading decisions. 
+### Axon's 3 Decisions:
+1. Long: Taking a long position or buying with an anticipation of a minimum_roi
+2. Short: Taking a short position or shorting with an anticipation of a minimum_roi
+3. STFO: Staying the Fuck out or not trading due to either a sideway movement or high volatility and randomness in the market.
 
-## Installation
+While the newly created daily candle's decision is less likely to change, the conclusion of the day that follows fluctuates more often and is very much driven by how the current daily candle shall close. Axon's websocket API updates the client every 30 minutes about its daily trading decisions. 
 
-Requires python3 and websocket client - future work will be added to integrate coinbase pro.
-### To run:
-`python3 main.py`
+### Script Under development
+Currently the script requires python3 and websocket client. It should be enhanced to an AI agent class "Axon".
 
-*sample output*
+#### To run:
+```python3 main.py```
 
-  `{
+*sample incomming message from Axon's websocket every 30 minutes on day 2021-09-26 00:00 UTC*
+
+```{
   "timestamp": 1632636034,
   "forecast": [{
       "period": "1D",
@@ -40,4 +51,4 @@ Requires python3 and websocket client - future work will be added to integrate c
       "minimum_roi": 0.02,
       "info": "Axon is LONG | Confidence: 56.25%"
     }]
-  }`
+  }```
