@@ -1,5 +1,3 @@
 .idea/
 venv/
 axon.log
-common/__pycache__/
-__pycache__/
