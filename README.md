@@ -33,7 +33,8 @@ Currently the script requires python3 and websocket client. It should be enhance
 
 *sample incomming message from Axon's websocket every 30 minutes on day 2021-09-26 00:00 UTC*
 
-```{
+```
+{
   "timestamp": 1632636034,
   "forecast": [{
       "period": "1D",
@@ -51,4 +52,5 @@ Currently the script requires python3 and websocket client. It should be enhance
       "minimum_roi": 0.02,
       "info": "Axon is LONG | Confidence: 56.25%"
     }]
-  }```
+  }
+```
