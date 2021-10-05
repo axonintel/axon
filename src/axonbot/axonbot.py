@@ -99,7 +99,3 @@ class AxonBot:
         :return: prints out to user
         """
         print(message)
-
-
-bot = AxonBot()
-bot.run()

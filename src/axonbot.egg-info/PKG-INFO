@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
-Name: axonbot-axonbtc
-Version: 0.0.2
+Name: axonbot
+Version: 0.0.4
 Summary: Axon is an artificially intelligent agent that trades bitcoin for now. This module aims to connect to Axon's websocket and allow for instantanous AI-based trading decisions.
 Home-page: https://github.com/axonintel/axon
 Author: Shehadi Dayekh

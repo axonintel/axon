@@ -1,8 +1,0 @@
-LICENSE
-README.md
-pyproject.toml
-setup.cfg
-src/axonbot_axonbtc.egg-info/PKG-INFO
-src/axonbot_axonbtc.egg-info/SOURCES.txt
-src/axonbot_axonbtc.egg-info/dependency_links.txt
-src/axonbot_axonbtc.egg-info/top_level.txt
