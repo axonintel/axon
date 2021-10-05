@@ -25,11 +25,15 @@
 
 While the newly created daily candle's decision is less likely to change, the conclusion of the day that follows fluctuates more often and is very much driven by how the current daily candle shall close. Axon's websocket API updates the client every 30 minutes about its daily trading decisions. 
 
-### Script Under development
-Currently the script requires python3 and websocket client. It should be enhanced to an AI agent class "Axon".
+### Install beta 0.0.4 *under development*
+```pip install axonbot```
 
-#### To run:
-```python3 main.py```
+#### To run in python:
+```
+from axonbot.axonbot import AxonBot
+bot = Axonbot()
+bot.run()
+```
 
 *sample incomming message from Axon's websocket every 30 minutes on day 2021-09-26 00:00 UTC*
 
