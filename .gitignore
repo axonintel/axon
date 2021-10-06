@@ -2,4 +2,8 @@
 venv/
 axon.log
 __pycache__/
+axonbot/__pycache__/
 setup.cfg
+axonbot.egg-info/
+dist/
+pyproject.toml
