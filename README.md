@@ -34,7 +34,7 @@ While the newly created daily candle's decision is less likely to change, the co
 #### To run in python:
 ```
 from axonbot import AxonBot
-bot = Axonbot()
+bot = AxonBot()
 bot.run()
 ```
 
