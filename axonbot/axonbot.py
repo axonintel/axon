@@ -32,7 +32,10 @@ class AxonBot:
         self.trial_key = "n1MLgSRxLP86iHUUjAFEv6PDC9NCWoVP5DBTAcN6"
         self.header = {"x-api-key": self.trial_key}
         self.ping_interval = 60
-        self.wsapp = websocket.WebSocketApp(self.uri, on_message=self.on_message, header=self.header)
+        self.wsapp = websocket.WebSocketApp(self.uri,
+                                            on_message=self.on_message,
+                                            on_close=on_websocket_close,
+                                            header=self.header)
         self.cbpro = cbpro.PublicClient()
 
     def run(self):
@@ -42,7 +45,7 @@ class AxonBot:
     def on_message(self, wsapp, message):
         """
         This is the main function in the class and where strategy should be built based on the latest notification from
-        Axon. wsapp was added there to allow for the class websocket to be initialized "TODO: to be fixed"
+        Axon. wsapp was added there to allow for the class websocket to be initialized
         :param message: string - received message
         :return: TODO returns trading decision and action taken based on the notification.
         """
@@ -55,7 +58,7 @@ class AxonBot:
                 self.notify("TODO with a NEW notification came in: " + message)
             else:
                 self.log.info(message)
-                self.notify("TODO with an OLD notification after a websocket initial connect/re-connect: " +  message)
+                self.notify("TODO with an OLD notification after a websocket initial connect/re-connect: " + message)
         except Exception as e:
             self.log.info("Caught exception when converting message into json\n" + str(e))
             self.notify("something went wrong, please check the logs")
@@ -99,3 +102,9 @@ class AxonBot:
         :return: prints out to user
         """
         print(message)
+
+
+def on_websocket_close(wsapp, close_status_code, close_msg):
+    if close_status_code == 1001 or close_status_code == 1000 or close_msg == "Going away":
+        wsapp.sock = None
+        wsapp.run_forever(ping_interval=60)

@@ -1,5 +1,6 @@
 .idea/
 venv/
+axonbot/axon.log
 axon.log
 __pycache__/
 axonbot/__pycache__/
