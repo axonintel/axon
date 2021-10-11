@@ -34,30 +34,80 @@ While the newly created daily candle's decision is less likely to change, the co
 #### To run in python:
 ```
 from axonbot import AxonBot
+bot = AxonBot(cb_api_key=CB_API_KEY, cb_api_secret=CB_API_SECRET, passphrase=CB_API_PASSPHRASE, axon_api_key=AXON_API_KEY)
+
 bot = AxonBot()
-bot.run()
+bot.connect()
 ```
+Returns True if connection to both Axon's websocket and CoinbasePro are successful.
 
-*sample incomming message from Axon's websocket every 30 minutes on day 2021-09-26 00:00 UTC*
-
+*sample incomming message from Axon's websocket the day of 2021-09-26 00:00 UTC*
+These messages are stored in a queue 
 ```
 {
   "timestamp": 1632636034,
-  "forecast": [{
+  "forecast": {
       "period": "1D",
       "candle": "2021-09-26 00:00 UTC",
       "decision": "STFO",
       "confidence": 0.5625,
       "minimum_roi": 0,
       "info": "Axon is staying the FUCK OUT | Confidence: 56.72%"
-    },
-  {
-      "period": "1D",
-      "candle": "2021-09-27  00:00 UTC",
-      "decision": "LONG",
-      "confidence": 0.5625,
-      "minimum_roi": 0.02,
-      "info": "Axon is LONG | Confidence: 56.25%"
-    }]
+    }
   }
 ```
+#### To check the status of your btc account:
+
+```
+bot.btc_account
+```
+
+returns
+
+```
+{
+'id': 'xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx', 
+'currency': 'BTC', 
+'balance': '0.0100000000000000', 
+'hold': '0.0000000000000000', 
+'available': '0.01', 
+'profile_id': 'xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx', 
+'trading_enabled': True
+}
+```
+
+#### To check the status of your usd account:
+
+```
+bot.usd_account
+```
+
+returns
+
+```
+{
+'id': 'xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx', 
+'currency': 'USD', 
+'balance': '1000.0000000000000000', 
+'hold': '0.0000000000000000', 
+'available': '1000', 
+'profile_id': 'xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx', 
+'trading_enabled': True
+}
+```
+
+#### Traiding window:
+Since Axon trades daily, the bot has a traiding window that is 
+capped by axon_maximum_connection_duration limit of 90 minutes such that:
+
+```
+connection_preparation_window + traiding_window < axon_maximum_connection_duration
+```
+
+To check if the bot is in the traiding window:
+
+```
+bot.checkif_in_traiding_window()
+```
+
+

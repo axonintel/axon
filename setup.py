@@ -3,7 +3,6 @@
 from setuptools import setup, find_packages
 
 install_requires = [
-    'websocket_client>=1.2.1',
     'cbpro>=1.1.4',
 ]
 
@@ -12,7 +11,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='axonbot',
-    version='0.0.8',
+    version='0.1.0',
     author='Shehadi Dayekh',
     author_email='shehadi@axonintellex.com',
     license='MIT',

@@ -8,3 +8,5 @@ setup.cfg
 axonbot.egg-info/
 dist/
 pyproject.toml
+constants.py
+axon_websocket.log
