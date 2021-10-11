@@ -35,8 +35,6 @@ While the newly created daily candle's decision is less likely to change, the co
 ```
 from axonbot import AxonBot
 bot = AxonBot(cb_api_key=CB_API_KEY, cb_api_secret=CB_API_SECRET, passphrase=CB_API_PASSPHRASE, axon_api_key=AXON_API_KEY)
-
-bot = AxonBot()
 bot.connect()
 ```
 Returns True if connection to both Axon's websocket and CoinbasePro are successful.
