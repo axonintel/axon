@@ -94,18 +94,18 @@ returns
 }
 ```
 
-#### Traiding window:
-Since Axon trades daily, the bot has a traiding window that is 
+#### Trading window:
+Since Axon trades daily, the bot has a trading window that is 
 capped by axon_maximum_connection_duration limit of 90 minutes such that:
 
 ```
-connection_preparation_window + traiding_window < axon_maximum_connection_duration
+connection_preparation_window + trading_window < axon_maximum_connection_duration
 ```
 
-To check if the bot is in the traiding window:
+To check if the bot is in the trading window:
 
 ```
-bot.checkif_in_traiding_window()
+bot.checkif_in_trading_window()
 ```
 
 
