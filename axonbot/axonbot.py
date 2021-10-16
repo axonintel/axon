@@ -3,6 +3,7 @@ import cbpro
 import queue
 import logging
 import datetime
+import json
 from axonbot.axonwebsocket import AxonWebsocket
 
 
@@ -42,6 +43,7 @@ class AxonBot:
         self.now = 0
         self.tsnow = 0
         self.forecast = None
+        self.next_candle_to_trade = None
         self.connection_preparation_window = connection_preparation_window
         self.traiding_window = traiding_window
 
@@ -93,21 +95,25 @@ class AxonBot:
         self.log.info('Coinbase Pro client connected')
         return True
 
-    def checkif_in_traiding_window(self):
+    def checkif_in_traiding_window(self, candle="1D"):
         assert self.connection_preparation_window + self.traiding_window < self.axon_maximum_connection_duration
         self.now = datetime.datetime.utcnow()
         self.tsnow = int(time.time())
-        if self.now.hour <= 1:
-            if self.now.hour * 60 + self.now.minute < self.traiding_window:
-                self.is_in_traiding_window = True
-                return True
-        elif self.now.hour == 23:
-            if self.now.minute % (60 - self.connection_preparation_window) < self.connection_preparation_window:
-                self.is_in_traiding_window = True
-                return True
-        else:
-            self.is_in_traiding_window = False
-            return False
+        if candle == "1D":
+            if self.now.hour <= 1:
+                if self.now.hour * 60 + self.now.minute < self.traiding_window:
+                    self.is_in_traiding_window = True
+                    self.next_candle_to_trade = self.now.strftime("%Y-%m-%d 00:00Z")
+                    return True
+            elif self.now.hour == 23:
+                if self.now.minute % (60 - self.connection_preparation_window) < self.connection_preparation_window:
+                    self.is_in_traiding_window = True
+                    self.next_candle_to_trade = (self.now + datetime.timedelta(days=1)).strftime("%Y-%m-%d 00:00Z")
+                    return True
+            else:
+                self.is_in_traiding_window = False
+                self.next_candle_to_trade = (self.now + datetime.timedelta(days=1)).strftime("%Y-%m-%d 00:00Z")
+                return False
 
     def gather_account_information(self):
         accounts = self.trader.get_accounts()
@@ -119,3 +125,30 @@ class AxonBot:
         except Exception as e:
             self.log.debug(e)
             return False
+
+    def run_daily_traiding_strategy(self):
+
+        self.checkif_in_traiding_window()
+
+        if self.is_time_to_trade:
+            forecast_candle = json.loads(self.forecast['forecast'])['candle']
+
+            # Wait for the newest forecast to be added to the queue by Axon's websocket
+            if self.next_candle_to_trade != forecast_candle:
+                while self.axon_queue.qsize() == 0:
+                    self.log.info("In trading window: Waiting for the latest update from Axon")
+                    time.sleep(1)
+                self.get_lastest_forecast()
+            self.log.info("A NEW forecast received: " + str(self.forecast))
+            self.execute_trade()
+        else:
+            print("Not in traiding window: sleeping for two minutes")
+            time.sleep(120)
+
+    def execute_trade(self):
+
+        pass
+        #TODO get current open positions
+        #TODO compare forecast to open position
+        #TODO execute trade if needed
+
