@@ -1,16 +1,11 @@
-import sys
-import websocket
 import logging
 import time
 import json
 import datetime
 from threading import Thread
-from axonbot._websocketpatch import run_forever
-
+from websocket import WebSocketApp
 
 logging.basicConfig(filename='./axon_websocket.log')
-if sys.version_info >= (3, 9, 0):
-    websocket.WebSocketApp.run_forever = run_forever
 
 
 class AxonWebsocket:
@@ -38,10 +33,13 @@ class AxonWebsocket:
         self.header = {"x-api-key": self.api_key}
         self.ping_interval = 60
         self.time_out = 30
-        self.wsapp = websocket.WebSocketApp(self.uri,
-                                            on_message=self.on_message,
-                                            on_close=self.on_websocket_close,
-                                            header=self.header)
+
+        self.wsapp = WebSocketApp(self.uri,
+                                  on_message=self.on_message,
+                                  on_close=self.on_websocket_close,
+                                  header=self.header)
+
+
         self.forecast = None
         self.new_forecast = False
         self.thread = None
@@ -51,6 +49,7 @@ class AxonWebsocket:
         self.timestamp = int(time.time())
         self.thread = Thread(target=self.wsapp.run_forever, args=(None, None, self.ping_interval, self.time_out))
         self.thread.start()
+        return True
 
     def on_message(self, wsapp, message):
         """
@@ -88,8 +87,6 @@ class AxonWebsocket:
                                                                   second=0) == datetime.datetime.utcnow() \
                        .replace(hour=0, minute=0, second=0, microsecond=0)
             assert forecast['candle'] == datetime.datetime.utcnow().strftime("%Y-%m-%d 00:00Z")
-            # assert forecasts[1]['candle'] == (datetime.datetime.utcnow()
-            #                                   + datetime.timedelta(days=1)).strftime("%Y-%m-%d 00:00Z")
             return True
         else:
             return False

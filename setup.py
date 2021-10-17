@@ -11,7 +11,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='axonbot',
-    version='0.1.2',
+    version='0.1.3',
     author='Shehadi Dayekh',
     author_email='shehadi@axonintellex.com',
     license='MIT',
