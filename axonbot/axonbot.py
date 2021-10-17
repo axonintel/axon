@@ -59,7 +59,7 @@ class AxonBot:
         self.log.info('Axon Websocket connected')
         return axon
 
-    def get_lastest_forecast(self):
+    def get_latest_forecast(self):
         """
         Fetch the latest forecast form the queue of messages received from Axon's bot. Reconnect to Axon if needed.
         :return: True if successful and sets a dictionary of the latest forecast to use to self.
@@ -74,7 +74,7 @@ class AxonBot:
         if new_msg == "websocket disconnected":
             time.sleep(3)
             self.axon = self.connect_to_axon()
-            self.get_lastest_forecast()
+            self.get_latest_forecast()
         elif "timestamp" in new_msg:
             self.forecast = new_msg
             return True
@@ -91,7 +91,7 @@ class AxonBot:
         self.axon = self.connect_to_axon()
         self.trader = cbpro.AuthenticatedClient(self.cb_api_key, self.cb_api_secret, self.passphrase)
         assert self.gather_account_information()
-        assert self.get_lastest_forecast()
+        assert self.get_latest_forecast()
         self.log.info('Coinbase Pro client connected')
         return True
 
@@ -139,7 +139,7 @@ class AxonBot:
                 while self.axon_queue.qsize() == 0:
                     self.log.info("In trading window: Waiting for the latest update from Axon")
                     time.sleep(1)
-                self.get_lastest_forecast()
+                self.get_latest_forecast()
             self.log.info("A NEW forecast received: " + str(self.forecast))
             self.execute_trade()
         else:

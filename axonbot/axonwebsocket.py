@@ -1,12 +1,16 @@
+import sys
 import websocket
 import logging
 import time
 import json
 import datetime
 from threading import Thread
+from axonbot._websocketpatch import run_forever
 
 
 logging.basicConfig(filename='./axon_websocket.log')
+if sys.version_info >= (3, 9, 0):
+    websocket.WebSocketApp.run_forever = run_forever
 
 
 class AxonWebsocket:
