@@ -103,16 +103,16 @@ class AxonBot:
             if self.now.hour <= 1:
                 if self.now.hour * 60 + self.now.minute < self.trading_window:
                     self.is_in_trading_window = True
-                    self.next_candle_to_trade = self.now.strftime("%Y-%m-%d")
+                    self.next_candle_to_trade = self.now.strftime("%Y-%m-%d 00:00Z")
                     return True
             elif self.now.hour == 23:
                 if self.now.minute % (60 - self.connection_preparation_window) < self.connection_preparation_window:
                     self.is_in_trading_window = True
-                    self.next_candle_to_trade = (self.now + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+                    self.next_candle_to_trade = (self.now + datetime.timedelta(days=1)).strftime("%Y-%m-%d 00:00Z")
                     return True
             else:
                 self.is_in_trading_window = False
-                self.next_candle_to_trade = (self.now + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+                self.next_candle_to_trade = (self.now + datetime.timedelta(days=1)).strftime("%Y-%m-%d 00:00Z")
                 return False
 
     def gather_account_information(self):
