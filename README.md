@@ -43,16 +43,16 @@ Returns True if connection to both Axon's websocket and CoinbasePro are successf
 These messages are stored in a queue 
 ```
 {
-  "timestamp": 1632636034,
-  "forecast": {
-      "period": "1D",
-      "candle": "2021-09-26 00:00 UTC",
-      "decision": "STFO",
-      "confidence": 0.5625,
-      "minimum_roi": 0,
-      "info": "Axon is staying the FUCK OUT | Confidence: 56.72%"
+'timestamp': 1636848000, 
+'pair': 'btcusd', 
+'period': '1D', 
+'forecast': 
+    {
+        'candle': '2021-11-14', 
+        'decision': 'long', 
+        'confidence': 53.24
     }
-  }
+}
 ```
 #### To check the status of your btc account:
 
@@ -108,4 +108,9 @@ To check if the bot is in the trading window:
 bot.checkif_in_trading_window()
 ```
 
+To execute trading forever:
+
+```
+bot.run_daily_trading_strategy()
+```
 

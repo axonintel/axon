@@ -3,7 +3,6 @@ import cbpro
 import queue
 import logging
 import datetime
-import json
 from axonbot.axonwebsocket import AxonWebsocket
 
 
@@ -71,7 +70,7 @@ class AxonBot:
 
         # Get latest message from queue or block until a new notification is present
         new_msg = self.axon_queue.get()
-        if new_msg == "websocket disconnected":
+        if new_msg == "websocket_disconnected":
             time.sleep(3)
             self.axon = self.connect_to_axon()
             self.get_latest_forecast()
@@ -103,16 +102,24 @@ class AxonBot:
             if self.now.hour <= 1:
                 if self.now.hour * 60 + self.now.minute < self.trading_window:
                     self.is_in_trading_window = True
-                    self.next_candle_to_trade = self.now.strftime("%Y-%m-%d 00:00Z")
+                    self.next_candle_to_trade = self.now.strftime("%Y-%m-%d")
                     return True
+                else:
+                    self.is_in_trading_window = False
+                    self.next_candle_to_trade = (self.now + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+                    return False
             elif self.now.hour == 23:
                 if self.now.minute % (60 - self.connection_preparation_window) < self.connection_preparation_window:
                     self.is_in_trading_window = True
-                    self.next_candle_to_trade = (self.now + datetime.timedelta(days=1)).strftime("%Y-%m-%d 00:00Z")
+                    self.next_candle_to_trade = (self.now + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
                     return True
+                else:
+                    self.is_in_trading_window = False
+                    self.next_candle_to_trade = (self.now + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+                    return False
             else:
                 self.is_in_trading_window = False
-                self.next_candle_to_trade = (self.now + datetime.timedelta(days=1)).strftime("%Y-%m-%d 00:00Z")
+                self.next_candle_to_trade = (self.now + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
                 return False
 
     def gather_account_information(self):
@@ -130,21 +137,23 @@ class AxonBot:
 
         self.checkif_in_trading_window()
 
-        if self.is_time_to_trade:
+        if self.is_in_trading_window:
             assert self.connect()
-            forecast_candle = json.loads(self.forecast['forecast'])['candle']
+            forecast_candle = self.forecast['forecast']['candle']
 
             # Wait for the newest forecast to be added to the queue by Axon's websocket
             if self.next_candle_to_trade != forecast_candle:
+                self.log.info("In trading window: Waiting for the latest forecast from Axon's websocket")
                 while self.axon_queue.qsize() == 0:
-                    self.log.info("In trading window: Waiting for the latest update from Axon")
                     time.sleep(1)
                 self.get_latest_forecast()
-            self.log.info("A NEW forecast received: " + str(self.forecast))
+            self.log.info("A NEW forecast received: %s", str(self.forecast))
             self.execute_trade()
         else:
-            print("Not in trading window: sleeping for two minutes")
-            time.sleep(120)
+            next_candle_to_trade_dt = datetime.datetime.strptime(self.next_candle_to_trade, "%Y-%m-%d")
+            sleep_for = (next_candle_to_trade_dt - self.now).seconds - self.connection_preparation_window * 60
+            self.log.info("Not in trading window: sleeping for %s seconds", str(sleep_for))
+            time.sleep(sleep_for)
 
     def execute_trade(self):
 

@@ -1,2 +1,2 @@
-websocket_client>=1.2.1,
 cbpro>=1.1.4
+websocket_client

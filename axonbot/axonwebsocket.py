@@ -2,6 +2,7 @@ import logging
 import time
 import json
 import datetime
+import sys
 from threading import Thread
 from websocket import WebSocketApp
 
@@ -34,11 +35,14 @@ class AxonWebsocket:
         self.ping_interval = 60
         self.time_out = 30
 
+        # self.wsapp = WebSocketApp(self.uri,
+        #                           on_message=self.on_message,
+        #                           on_close=self.on_websocket_close,
+        #                           header=self.header)
         self.wsapp = WebSocketApp(self.uri,
-                                  on_message=self.on_message,
-                                  on_close=self.on_websocket_close,
+                                  on_message=lambda ws, msg: self.on_message(ws, msg),
+                                  on_close=lambda ws: self.on_websocket_close(ws),
                                   header=self.header)
-
 
         self.forecast = None
         self.new_forecast = False
@@ -113,5 +117,5 @@ class AxonWebsocket:
         print(message)
 
     def on_websocket_close(self, ws):
-        self.qu.put("websocket disconnected")
+        self.qu.put("websocket_disconnected")
 

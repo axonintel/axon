@@ -3,8 +3,8 @@ import cbpro
 import queue
 import logging
 import datetime
-import json
 from axonbot.axonwebsocket import AxonWebsocket
+
 
 
 logging.basicConfig(filename='./bot.log')
@@ -44,6 +44,13 @@ class AxonBot:
         self.tsnow = 0
         self.forecast = None
         self.next_candle_to_trade = None
+        self.new_forecast_executed = False
+        self.current_position = None
+        self.sides = {
+            "long": "buy",
+            "short": "sell",
+            "stfo": "sell"
+        }
         self.connection_preparation_window = connection_preparation_window
         self.trading_window = trading_window
 
@@ -71,7 +78,7 @@ class AxonBot:
 
         # Get latest message from queue or block until a new notification is present
         new_msg = self.axon_queue.get()
-        if new_msg == "websocket disconnected":
+        if new_msg == "websocket_disconnected":
             time.sleep(3)
             self.axon = self.connect_to_axon()
             self.get_latest_forecast()
@@ -105,13 +112,23 @@ class AxonBot:
                     self.is_in_trading_window = True
                     self.next_candle_to_trade = self.now.strftime("%Y-%m-%d")
                     return True
+                else:
+                    self.is_in_trading_window = False
+                    self.next_candle_to_trade = (self.now + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+                    return False
             elif self.now.hour == 23:
                 if self.now.minute % (60 - self.connection_preparation_window) < self.connection_preparation_window:
                     self.is_in_trading_window = True
                     self.next_candle_to_trade = (self.now + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
                     return True
+                else:
+                    self.is_in_trading_window = False
+                    self.new_forecast_executed = False
+                    self.next_candle_to_trade = (self.now + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+                    return False
             else:
                 self.is_in_trading_window = False
+                self.new_forecast_executed = False
                 self.next_candle_to_trade = (self.now + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
                 return False
 
@@ -121,35 +138,56 @@ class AxonBot:
         try:
             self.btc_account = accounts[[account['currency'] for account in accounts].index('BTC')]
             self.usd_account = accounts[[account['currency'] for account in accounts].index('USD')]
+            btc_price = float(self.trader.get_product_ticker('BTC-USD')['price'])
+            if float(self.btc_account['balance']) * btc_price > float(self.usd_account['balance']):
+                self.current_position = 'long'
+            else:
+                self.current_position = 'short'
             return True
         except Exception as e:
             self.log.debug(e)
             return False
 
     def run_daily_trading_strategy(self):
+        while True:
+            self.checkif_in_trading_window()
 
-        self.checkif_in_trading_window()
+            if self.is_in_trading_window and not self.new_forecast_executed:
+                assert self.connect()
+                forecast_candle = self.forecast['forecast']['candle']
 
-        if self.is_time_to_trade:
-            assert self.connect()
-            forecast_candle = json.loads(self.forecast['forecast'])['candle']
-
-            # Wait for the newest forecast to be added to the queue by Axon's websocket
-            if self.next_candle_to_trade != forecast_candle:
-                while self.axon_queue.qsize() == 0:
-                    self.log.info("In trading window: Waiting for the latest update from Axon")
-                    time.sleep(1)
-                self.get_latest_forecast()
-            self.log.info("A NEW forecast received: " + str(self.forecast))
-            self.execute_trade()
-        else:
-            print("Not in trading window: sleeping for two minutes")
-            time.sleep(120)
+                # Wait for the newest forecast to be added to the queue by Axon's websocket
+                if self.next_candle_to_trade != forecast_candle:
+                    self.log.info("In trading window: Waiting for the latest forecast from Axon's websocket")
+                    while self.axon_queue.qsize() == 0:
+                        time.sleep(1)
+                    self.get_latest_forecast()
+                self.log.info("A NEW forecast received: %s", str(self.forecast))
+                self.execute_trade()
+            else:
+                next_candle_to_trade_dt = datetime.datetime.strptime(self.next_candle_to_trade, "%Y-%m-%d")
+                sleep_for = (next_candle_to_trade_dt - self.now).seconds - self.connection_preparation_window * 60
+                sleep_for = max(1, sleep_for)
+                self.log.info("Not in trading window: sleeping for %s seconds", str(sleep_for))
+                time.sleep(sleep_for)
 
     def execute_trade(self):
+        orders = self.trader.get_orders()
+        if len(list(orders)) > 0:
+            self.trader.cancel_all(product_id='BTC-USD')
 
-        pass
-        #TODO get current open positions
-        #TODO compare forecast to open position
-        #TODO execute trade if needed
+        new_decision = self.forecast['forecast']['decision']
+        if self.current_position == 'long' and new_decision in ['short', 'stfo']:
+            side = 'sell'
+            self.trader.place_market_order(product_id='BTC-USD',
+                                           side=side,
+                                           size=float(self.btc_account['balance']))
+        elif self.current_position == 'short' and new_decision == 'long':
+            side = 'buy'
+            self.trader.place_market_order(product_id='BTC-USD',
+                                           side=side,
+                                           funds=float(self.usd_account['balance']))
+        else:
+            action = 'do nothing'
+        self.new_forecast_executed = True
 
