@@ -179,15 +179,24 @@ class AxonBot:
         new_decision = self.forecast['forecast']['decision']
         if self.current_position == 'long' and new_decision in ['short', 'stfo']:
             side = 'sell'
-            self.trader.place_market_order(product_id='BTC-USD',
-                                           side=side,
-                                           size=float(self.btc_account['balance']))
+            order = self.trader.place_market_order(product_id='BTC-USD', side=side,
+                                                   size=float(self.btc_account['balance']))
+            while order['status'] != 'done':
+                time.sleep(1)
+                order = self.trader.get_order(order['id'])
+            self.new_forecast_executed = True
+            self.log.info("Short position executed. Order: %s", str(order))
         elif self.current_position == 'short' and new_decision == 'long':
             side = 'buy'
-            self.trader.place_market_order(product_id='BTC-USD',
-                                           side=side,
-                                           funds=float(self.usd_account['balance']))
+            order = self.trader.place_market_order(product_id='BTC-USD', side=side,
+                                                   funds=float(self.usd_account['balance']))
+            while order['status'] != 'done':
+                time.sleep(1)
+                order = self.trader.get_order(order['id'])
+            self.new_forecast_executed = True
+            self.log.info("Long position executed. Order: %s", str(order))
         else:
-            action = 'do nothing'
-        self.new_forecast_executed = True
+            self.log.info("No action taken. Current position is %s. Newest Axon decision is: %s",
+                          str(self.current_position), str(new_decision))
+
 
