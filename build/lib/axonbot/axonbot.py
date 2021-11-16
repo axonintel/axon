@@ -5,9 +5,10 @@ import logging
 import datetime
 from axonbot.axonwebsocket import AxonWebsocket
 
-
-
-logging.basicConfig(filename='./bot.log')
+logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
+                    datefmt='%Y-%m-%d:%H:%M:%S',
+                    level=logging.DEBUG,
+                    filename='./axonbot.log')
 
 
 class AxonBot:
@@ -168,7 +169,10 @@ class AxonBot:
                 next_candle_to_trade_dt = datetime.datetime.strptime(self.next_candle_to_trade, "%Y-%m-%d")
                 sleep_for = (next_candle_to_trade_dt - self.now).seconds - self.connection_preparation_window * 60
                 sleep_for = max(1, sleep_for)
-                self.log.info("Not in trading window: sleeping for %s seconds", str(sleep_for))
+                if self.new_forecast_executed:
+                    self.log.info("New forecast already executed: sleeping for %s seconds", str(sleep_for))
+                else:
+                    self.log.info("Not in trading window: sleeping for %s seconds", str(sleep_for))
                 time.sleep(sleep_for)
 
     def execute_trade(self):
@@ -198,5 +202,6 @@ class AxonBot:
         else:
             self.log.info("No action taken. Current position is %s. Newest Axon decision is: %s",
                           str(self.current_position), str(new_decision))
+            self.new_forecast_executed = True
 
 

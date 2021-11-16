@@ -2,11 +2,10 @@ import logging
 import time
 import json
 import datetime
-import sys
 from threading import Thread
 from websocket import WebSocketApp
 
-logging.basicConfig(filename='./axon_websocket.log')
+logger = logging.getLogger(__name__)
 
 
 class AxonWebsocket:

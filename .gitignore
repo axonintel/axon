@@ -1,8 +1,7 @@
 .idea/
 venv/
 env/
-axonbot/axon.log
-axon.log
+axonbot.log
 __pycache__/
 axonbot/__pycache__/
 setup.cfg
@@ -10,4 +9,3 @@ axonbot.egg-info/
 dist/
 pyproject.toml
 constants.py
-axon_websocket.log
