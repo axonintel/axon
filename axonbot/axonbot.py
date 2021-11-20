@@ -158,7 +158,7 @@ class AxonBot:
                 forecast_candle = self.forecast['forecast']['candle']
 
                 # Wait for the newest forecast to be added to the queue by Axon's websocket
-                if self.next_candle_to_trade != forecast_candle:
+                while self.next_candle_to_trade != forecast_candle:
                     self.log.info("In trading window: Waiting for the latest forecast from Axon's websocket")
                     while self.axon_queue.qsize() == 0:
                         time.sleep(1)
@@ -167,13 +167,14 @@ class AxonBot:
                 self.execute_trade()
             else:
                 next_candle_to_trade_dt = datetime.datetime.strptime(self.next_candle_to_trade, "%Y-%m-%d")
-                sleep_for = (next_candle_to_trade_dt - self.now).seconds - self.connection_preparation_window * 60
+                sleep_for = (next_candle_to_trade_dt - self.now).seconds - self.connection_preparation_window * 60 + 1
                 sleep_for = max(1, sleep_for)
                 if self.new_forecast_executed:
                     self.log.info("New forecast already executed: sleeping for %s seconds", str(sleep_for))
                 else:
                     self.log.info("Not in trading window: sleeping for %s seconds", str(sleep_for))
                 time.sleep(sleep_for)
+                self.new_forecast_executed = False
 
     def execute_trade(self):
         orders = self.trader.get_orders()

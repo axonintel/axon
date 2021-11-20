@@ -63,7 +63,7 @@ class AxonWebsocket:
         """
         try:
             msg = json.loads(msg)
-            assert self.valid_axon_forecast(msg)
+            # assert self.valid_axon_forecast(msg)
             self.forecast = msg
 
             if self.is_new_message(msg['timestamp']):
