@@ -163,6 +163,7 @@ class AxonBot:
                     while self.axon_queue.qsize() == 0:
                         time.sleep(1)
                     self.get_latest_forecast()
+                    forecast_candle = self.forecast['forecast']['candle']
                 self.log.info("A NEW forecast received: %s", str(self.forecast))
                 self.execute_trade()
             else:
