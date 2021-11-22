@@ -195,7 +195,7 @@ class AxonBot:
         elif self.current_position == 'short' and new_decision == 'long':
             side = 'buy'
             order = self.trader.place_market_order(product_id='BTC-USD', side=side,
-                                                   funds=float(self.usd_account['balance']))
+                                                   funds=round(float(self.usd_account['balance']), 2))
             while order['status'] != 'done':
                 time.sleep(1)
                 order = self.trader.get_order(order['id'])
