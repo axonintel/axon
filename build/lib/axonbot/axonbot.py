@@ -60,6 +60,11 @@ class AxonBot:
         self.usd_account = None
 
     def connect_to_axon(self):
+        try:
+            if self.axon.wsapp.sock.connected:
+                return self.axon
+        except:
+            pass
         axon = AxonWebsocket(self.axon_queue, api_key=self.axon_api_key)
         axon.connect()
         while not axon.wsapp.sock.connected:
@@ -83,6 +88,7 @@ class AxonBot:
             time.sleep(3)
             self.axon = self.connect_to_axon()
             self.get_latest_forecast()
+            return True
         elif "timestamp" in new_msg:
             self.forecast = new_msg
             return True
@@ -155,6 +161,7 @@ class AxonBot:
 
             if self.is_in_trading_window and not self.new_forecast_executed:
                 assert self.connect()
+                self.get_latest_forecast()
                 forecast_candle = self.forecast['forecast']['candle']
 
                 # Wait for the newest forecast to be added to the queue by Axon's websocket
