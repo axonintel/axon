@@ -58,6 +58,7 @@ class AxonBot:
         # Initialize CB Pro account information
         self.btc_account = None
         self.usd_account = None
+        self.order = None
 
     def connect_to_axon(self):
         try:
@@ -67,6 +68,11 @@ class AxonBot:
             pass
         axon = AxonWebsocket(self.axon_queue, api_key=self.axon_api_key)
         axon.connect()
+        if axon is None:
+            self.log.info('Axon Websocket not created properly, retrying in 3 seconds')
+            time.sleep(3)
+            axon = AxonWebsocket(self.axon_queue, api_key=self.axon_api_key)
+            axon.connect()
         while not axon.wsapp.sock.connected:
             time.sleep(1)
         self.log.info('Axon Websocket connected')
@@ -185,6 +191,7 @@ class AxonBot:
                 self.new_forecast_executed = False
 
     def execute_trade(self):
+        self.order = None
         orders = self.trader.get_orders()
         if len(list(orders)) > 0:
             self.trader.cancel_all(product_id='BTC-USD')
@@ -192,22 +199,28 @@ class AxonBot:
         new_decision = self.forecast['forecast']['decision']
         if self.current_position == 'long' and new_decision in ['short', 'stfo']:
             side = 'sell'
-            order = self.trader.place_market_order(product_id='BTC-USD', side=side,
-                                                   size=float(self.btc_account['balance']))
-            while order['status'] != 'done':
-                time.sleep(1)
-                order = self.trader.get_order(order['id'])
+            self.order = self.trader.place_market_order(product_id='BTC-USD', side=side,
+                                                        size=float(self.btc_account['balance']))
+            self.log.info("Short position placed. Order: %s", str(self.order))
+            while self.order['status'] != 'done':
+                while 'status' not in self.trader.get_order(self.order['id']):
+                    self.log.info("Waiting on Coinbase pro updates")
+                    time.sleep(3)
+                self.order = self.trader.get_order(self.order['id'])
             self.new_forecast_executed = True
-            self.log.info("Short position executed. Order: %s", str(order))
+            self.log.info("Short position executed. Order: %s", str(self.order))
         elif self.current_position == 'short' and new_decision == 'long':
             side = 'buy'
-            order = self.trader.place_market_order(product_id='BTC-USD', side=side,
-                                                   funds=round(float(self.usd_account['balance']), 2))
-            while order['status'] != 'done':
-                time.sleep(1)
-                order = self.trader.get_order(order['id'])
+            self.order = self.trader.place_market_order(product_id='BTC-USD', side=side,
+                                                        funds=round(float(self.usd_account['balance']), 2))
+            self.log.info("Long position placed. Order: %s", str(self.order))
+            while self.order['status'] != 'done':
+                while 'status' not in self.trader.get_order(self.order['id']):
+                    self.log.info("Waiting on Coinbase pro updates")
+                    time.sleep(3)
+                self.order = self.trader.get_order(self.order['id'])
             self.new_forecast_executed = True
-            self.log.info("Long position executed. Order: %s", str(order))
+            self.log.info("Long position executed. Order: %s", str(self.order))
         else:
             self.log.info("No action taken. Current position is %s. Newest Axon decision is: %s",
                           str(self.current_position), str(new_decision))
