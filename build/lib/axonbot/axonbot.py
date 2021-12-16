@@ -68,11 +68,12 @@ class AxonBot:
             pass
         axon = AxonWebsocket(self.axon_queue, api_key=self.axon_api_key)
         axon.connect()
-        if axon is None:
-            self.log.info('Axon Websocket not created properly, retrying in 3 seconds')
-            time.sleep(3)
+        while axon is None or axon.wsapp.sock is None:
+            self.log.info('Axon Websocket not created properly, retrying in 5 seconds')
+            time.sleep(4)
             axon = AxonWebsocket(self.axon_queue, api_key=self.axon_api_key)
             axon.connect()
+            time.sleep(1)
         while not axon.wsapp.sock.connected:
             time.sleep(1)
         self.log.info('Axon Websocket connected')
