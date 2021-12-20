@@ -168,7 +168,7 @@ class AxonBot:
 
             if self.is_in_trading_window and not self.new_forecast_executed:
                 assert self.connect()
-                self.get_latest_forecast()
+                # self.get_latest_forecast()
                 forecast_candle = self.forecast['forecast']['candle']
 
                 # Wait for the newest forecast to be added to the queue by Axon's websocket
@@ -178,7 +178,7 @@ class AxonBot:
                         time.sleep(1)
                     self.get_latest_forecast()
                     forecast_candle = self.forecast['forecast']['candle']
-                self.log.info("A NEW forecast received: %s", str(self.forecast))
+                self.log.info("The NEW forecast received: %s", str(self.forecast))
                 self.execute_trade()
             else:
                 next_candle_to_trade_dt = datetime.datetime.strptime(self.next_candle_to_trade, "%Y-%m-%d")
@@ -213,7 +213,7 @@ class AxonBot:
         elif self.current_position == 'short' and new_decision == 'long':
             side = 'buy'
             self.order = self.trader.place_market_order(product_id='BTC-USD', side=side,
-                                                        funds=round(float(self.usd_account['balance']), 2))
+                                                        funds=round(float(self.usd_account['balance']), 2)-0.01)
             self.log.info("Long position placed. Order: %s", str(self.order))
             while self.order['status'] != 'done':
                 while 'status' not in self.trader.get_order(self.order['id']):
