@@ -204,10 +204,12 @@ class AxonBot:
                                                         size=float(self.btc_account['balance']))
             self.log.info("Short position placed. Order: %s", str(self.order))
             while self.order['status'] != 'done':
-                while 'status' not in self.trader.get_order(self.order['id']):
+                _placed_order = self.trader.get_order(self.order['id'])
+                while 'status' not in _placed_order:
                     self.log.info("Waiting on Coinbase pro updates")
                     time.sleep(3)
-                self.order = self.trader.get_order(self.order['id'])
+                    _placed_order = self.trader.get_order(self.order['id'])
+                self.order = _placed_order
             self.new_forecast_executed = True
             self.log.info("Short position executed. Order: %s", str(self.order))
         elif self.current_position == 'short' and new_decision == 'long':
@@ -216,10 +218,12 @@ class AxonBot:
                                                         funds=round(float(self.usd_account['balance']), 2)-0.01)
             self.log.info("Long position placed. Order: %s", str(self.order))
             while self.order['status'] != 'done':
-                while 'status' not in self.trader.get_order(self.order['id']):
+                _placed_order = self.trader.get_order(self.order['id'])
+                while 'status' not in _placed_order:
                     self.log.info("Waiting on Coinbase pro updates")
                     time.sleep(3)
-                self.order = self.trader.get_order(self.order['id'])
+                    _placed_order = self.trader.get_order(self.order['id'])
+                self.order = _placed_order
             self.new_forecast_executed = True
             self.log.info("Long position executed. Order: %s", str(self.order))
         else:
