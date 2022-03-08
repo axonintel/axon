@@ -179,7 +179,14 @@ class AxonBot:
                     self.get_latest_forecast()
                     forecast_candle = self.forecast['forecast']['candle']
                 self.log.info("The NEW forecast received: %s", str(self.forecast))
-                self.execute_trade()
+                try:
+                    assert self.connect()
+                    self.execute_trade()
+                except Exception as e:
+                    self.log.debug(e)
+                    time.sleep(3)
+                    assert self.connect()
+                    self.execute_trade()
             else:
                 next_candle_to_trade_dt = datetime.datetime.strptime(self.next_candle_to_trade, "%Y-%m-%d")
                 sleep_for = (next_candle_to_trade_dt - self.now).seconds - self.connection_preparation_window * 60 + 1
